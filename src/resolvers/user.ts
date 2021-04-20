@@ -1,10 +1,22 @@
-import { Arg, Ctx, Field, InputType, Mutation, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Field,
+  InputType,
+  Mutation,
+  ObjectType,
+  Resolver,
+} from "type-graphql";
 import { User } from "../entities/User";
 import { MyContext } from "../types";
+import {
+  validateLoginInput,
+  validateRegisterInput,
+} from "../util/validateUserInput";
 import argon2 from "argon2";
 
 @InputType()
-class UsernamePasswordInput {
+export class UserRegisterInput {
   @Field(() => String)
   firstName!: string;
   @Field(() => String)
@@ -13,23 +25,110 @@ class UsernamePasswordInput {
   userEmail!: string;
   @Field(() => String)
   password!: string;
+  @Field(() => String)
+  confirmPassword!: string;
+}
+
+@InputType()
+export class UserPasswordInput {
+  @Field(() => String)
+  userEmail!: string;
+  @Field(() => String)
+  password!: string;
+}
+
+@ObjectType()
+export class FieldError {
+  @Field(() => String)
+  field!: string;
+  @Field(() => String)
+  message!: string;
+}
+
+@ObjectType()
+class UserResponse {
+  @Field(() => [FieldError], { nullable: true })
+  errors?: FieldError[];
+  @Field(() => User, { nullable: true })
+  user?: User;
 }
 
 @Resolver()
 export class UserResolver {
-  @Mutation(() => User)
+  @Mutation(() => UserResponse)
   async registerUser(
-    @Arg("options", () => UsernamePasswordInput) options: UsernamePasswordInput,
+    @Arg("options", () => UserRegisterInput) options: UserRegisterInput,
     @Ctx() { em }: MyContext
-  ) {
+  ): Promise<UserResponse> {
+    const { errors, valid } = validateRegisterInput(options);
+
+    if (!valid) {
+      return { errors };
+    }
+
+    const existingUser = await em.findOne(User, {
+      userEmail: options.userEmail.toLowerCase(),
+    });
+
+    if (existingUser) {
+      return {
+        errors: [
+          {
+            field: "email",
+            message: "This email is taken",
+          },
+        ],
+      };
+    }
+
     const hashedPassword = await argon2.hash(options.password);
     const user = em.create(User, {
       firstName: options.firstName,
       lastName: options.lastName,
-      userEmail: options.userEmail,
+      userEmail: options.userEmail.toLowerCase(),
       password: hashedPassword,
     });
+
     await em.persistAndFlush(user);
-    return user;
+
+    return {
+      user,
+    };
+  }
+
+  @Mutation(() => UserResponse)
+  async loginUser(
+    @Arg("options", () => UserPasswordInput) options: UserPasswordInput,
+    @Ctx() { em }: MyContext
+  ): Promise<UserResponse> {
+    const { errors, valid } = validateLoginInput(options);
+    var success = false;
+
+    if (!valid) {
+      return { errors };
+    }
+
+    const user = await em.findOne(User, {
+      userEmail: options.userEmail.toLowerCase(),
+    });
+
+    if(user) {
+      success = await argon2.verify(user.password, options.password);
+    }
+
+    if (!user || !success) {
+      return {
+        errors: [
+          {
+            field: "email",
+            message: "Login is incorrect or your account is disabled",
+          },
+        ],
+      };
+    }
+
+    return {
+      user,
+    };
   }
 }
