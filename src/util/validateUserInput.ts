@@ -47,7 +47,7 @@ export function validateRegisterInput({
   } else if(!isPasswordSecure(password)) {
     errors.push({
       field: "password",
-      message: "Password must contain a minimum of 8 characters and at least 1 uppercase letter, one lowercase letter and 1 number"
+      message: "Password must contain a minimum of 8 characters and at least 1 uppercase, 1 lowercase letter and 1 number"
     });
   }
 
