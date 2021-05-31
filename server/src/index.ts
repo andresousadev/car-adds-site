@@ -4,13 +4,13 @@ import microConfig from "./mikro-orm.config";
 import express from "express";
 import config from "./config";
 import { ApolloServer } from "apollo-server-express";
-import { MyContext } from './types';
 import { buildSchema } from "type-graphql";
 import { CarAddResolver } from "./resolvers/carAdd";
 import { UserResolver } from "./resolvers/user";
-import redis from 'redis';
-import session from 'express-session';
-import connectRedis from 'connect-redis';
+import redis from "redis";
+import session from "express-session";
+import connectRedis from "connect-redis";
+import cors from "cors";
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
@@ -18,21 +18,28 @@ const main = async () => {
 
   const app = express();
 
-  const RedisStore = connectRedis(session)
-  const redisClient = redis.createClient()
+  const RedisStore = connectRedis(session);
+  const redisClient = redis.createClient();
+
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
 
   app.use(
     session({
-      name: 'sess',
-      store: new RedisStore({ 
+      name: "sess",
+      store: new RedisStore({
         client: redisClient,
-        disableTouch: true
+        disableTouch: true,
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
         httpOnly: true,
-        sameSite: 'lax', // protect against csrf (cross-site request forgery)
-        secure: config.__prod__ // cookie only works in https
+        sameSite: "lax", // protect against csrf (cross-site request forgery)
+        secure: config.__prod__, // cookie only works in https
       },
       saveUninitialized: false,
       secret: "nmduiabnduianduia",
@@ -45,11 +52,13 @@ const main = async () => {
       resolvers: [CarAddResolver, UserResolver],
       validate: false,
     }),
-    context: ({req, res}): MyContext => ({ em: orm.em, req, res }),
+    context: ({ req, res }) => ({ em: orm.em, req, res }),
   });
-  
 
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({
+    app,
+    cors: false,
+  });
 
   app.listen(config.SERVER_PORT, () => {
     console.log(`Server started on localhost:${config.SERVER_PORT}`);
