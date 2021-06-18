@@ -147,7 +147,7 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: "userEmail",
+            field: "password",
             message: "Login is incorrect or your account is disabled",
           },
         ],
