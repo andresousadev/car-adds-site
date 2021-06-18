@@ -8,5 +8,6 @@ export default {
   DATABASE_PASSWORD: process.env.POSTGRES_PASSWORD,
   __prod__: process.env.NODE_ENV === "production",
   SERVER_PORT: process.env.SERVER_PORT || 3000,
-  REDIS_SECRET: process.env.REDIS_SECRET
+  REDIS_SECRET: process.env.REDIS_SECRET,
+  COOKIE_NAME: 'sess'
 };

@@ -15,6 +15,7 @@ import {
   validateRegisterInput,
 } from "../util/validateUserInput";
 import argon2 from "argon2";
+import config from '../config';
 
 @InputType()
 export class UserRegisterInput {
@@ -57,11 +58,9 @@ class UserResponse {
 @Resolver()
 export class UserResolver {
   @Query(() => User, { nullable: true })
-  async me(
-    @Ctx() { req, em }: MyContext
-  ) {
+  async me(@Ctx() { req, em }: MyContext) {
     // you are not logged in
-    if(!req.session.userId) {
+    if (!req.session.userId) {
       return null;
     }
 
@@ -110,14 +109,14 @@ export class UserResolver {
         errors: [
           {
             field: "server",
-            message: "An error occurred"
-          }
-        ]
-      }
+            message: "An error occurred",
+          },
+        ],
+      };
     }
-    
+
     req.session.userId = user.id.toString();
-    
+
     return {
       user,
     };
@@ -139,7 +138,7 @@ export class UserResolver {
       userEmail: options.userEmail.toLowerCase(),
     });
 
-    if(user) {
+    if (user) {
       success = await argon2.verify(user.password, options.password);
     }
 
@@ -159,5 +158,21 @@ export class UserResolver {
     return {
       user,
     };
+  }
+
+  @Mutation(() => Boolean)
+  async logoutUser(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        res.clearCookie(config.COOKIE_NAME);
+        if (err) {
+          console.log(err);
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
   }
 }

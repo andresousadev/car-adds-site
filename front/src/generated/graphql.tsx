@@ -37,6 +37,7 @@ export type Mutation = {
   deleteCarAdd: Scalars['Boolean'];
   registerUser: UserResponse;
   loginUser: UserResponse;
+  logoutUser: Scalars['Boolean'];
 };
 
 
@@ -134,6 +135,14 @@ export type LoginMutation = (
   ) }
 );
 
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'logoutUser'>
+);
+
 export type RegisterMutationVariables = Exact<{
   options: UserRegisterInput;
 }>;
@@ -190,6 +199,15 @@ export const LoginDocument = gql`
 
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
+};
+export const LogoutDocument = gql`
+    mutation Logout {
+  logoutUser
+}
+    `;
+
+export function useLogoutMutation() {
+  return Urql.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument);
 };
 export const RegisterDocument = gql`
     mutation Register($options: UserRegisterInput!) {
