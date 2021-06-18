@@ -1,14 +1,70 @@
 import { ChakraProvider, ColorModeProvider } from "@chakra-ui/react";
-import { Provider, createClient } from "urql";
+import { Provider, createClient, dedupExchange, fetchExchange } from "urql";
+import { Cache, cacheExchange, QueryInput } from "@urql/exchange-graphcache";
+import theme from "../theme";
+import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
+
+function betterUpdateQuery<Result, Query>(
+  cache: Cache,
+  qi: QueryInput,
+  result: any,
+  fn: (r: Result, q: Query) => Query
+) {
+  return cache.updateQuery(qi, (data) => fn(result, data as any) as any);
+}
 
 const client = createClient({
   url: "http://localhost:4000/graphql",
   fetchOptions: {
     credentials: "include",
   },
+  exchanges: [
+    dedupExchange,
+    cacheExchange({
+      updates: {
+        Mutation: {
+          loginUser: (_result, args, cache, info) => {
+            betterUpdateQuery<LoginMutation, MeQuery>(
+              cache,
+              {
+                query: MeDocument,
+              },
+              _result,
+              (result, query) => {
+                if (result.loginUser.errors) {
+                  return query;
+                } else {
+                  return {
+                    me: result.loginUser.user,
+                  };
+                }
+              }
+            );
+          },
+          registerUser: (_result, args, cache, info) => {
+            betterUpdateQuery<RegisterMutation, MeQuery>(
+              cache,
+              {
+                query: MeDocument,
+              },
+              _result,
+              (result, query) => {
+                if (result.registerUser.errors) {
+                  return query;
+                } else {
+                  return {
+                    me: result.registerUser.user,
+                  };
+                }
+              }
+            );
+          },
+        },
+      },
+    }),
+    fetchExchange,
+  ],
 });
-
-import theme from "../theme";
 
 function MyApp({ Component, pageProps }: any) {
   return (
