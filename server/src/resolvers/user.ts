@@ -88,7 +88,7 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: "email",
+            field: "userEmail",
             message: "This email is taken",
           },
         ],
@@ -147,7 +147,7 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: "email",
+            field: "userEmail",
             message: "Login is incorrect or your account is disabled",
           },
         ],

@@ -29,13 +29,13 @@ export function validateRegisterInput({
 
   if (userEmail.trim() === "") {
     errors.push({
-      field: "email",
+      field: "userEmail",
       message: "Email must not be empty",
     });
   } else {
     if (!isEmailValid(userEmail)) {
       errors.push({
-        field: "email",
+        field: "userEmail",
         message: "A valid email address is required",
       });
     }
@@ -70,7 +70,7 @@ export function validateLoginInput({ userEmail, password }: UserPasswordInput) {
 
   if (userEmail.trim() === "") {
     errors.push({
-      field: "email",
+      field: "userEmail",
       message: "Email must not be empty",
     });
   }
