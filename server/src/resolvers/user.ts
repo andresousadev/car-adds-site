@@ -72,7 +72,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async registerUser(
     @Arg("options", () => UserRegisterInput) options: UserRegisterInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const { errors, valid } = validateRegisterInput(options);
 
@@ -103,8 +103,21 @@ export class UserResolver {
       password: hashedPassword,
     });
 
-    await em.persistAndFlush(user);
-
+    try {
+      await em.persistAndFlush(user);
+    } catch (err) {
+      return {
+        errors: [
+          {
+            field: "server",
+            message: "An error occurred"
+          }
+        ]
+      }
+    }
+    
+    req.session.userId = user.id.toString();
+    
     return {
       user,
     };

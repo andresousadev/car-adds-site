@@ -13,10 +13,17 @@ export function validateRegisterInput({
 }: UserRegisterInput) {
   var errors: FieldError[] = [];
 
-  if (firstName.trim() === "" || lastName.trim() === "") {
+  if (firstName.trim() === "") {
     errors.push({
-      field: "naming",
-      message: "First name and last name must not be empty",
+      field: "firstName",
+      message: "First name must not be empty",
+    });
+  }
+
+  if (lastName.trim() === "") {
+    errors.push({
+      field: "lastName",
+      message: "Last name must not be empty",
     });
   }
 
@@ -41,13 +48,14 @@ export function validateRegisterInput({
     });
   } else if (password != confirmPassword) {
     errors.push({
-      field: "password",
+      field: "confirmPassword",
       message: "Passwords must match",
     });
-  } else if(!isPasswordSecure(password)) {
+  } else if (!isPasswordSecure(password)) {
     errors.push({
       field: "password",
-      message: "Password must contain a minimum of 8 characters and at least 1 uppercase, 1 lowercase letter and 1 number"
+      message:
+        "Password must contain a minimum of 8 characters and at least 1 uppercase, 1 lowercase letter and 1 number",
     });
   }
 
@@ -81,7 +89,8 @@ export function validateLoginInput({ userEmail, password }: UserPasswordInput) {
 }
 
 export function isEmailValid(email: String) {
-  const regEx = /^([0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/;
+  const regEx =
+    /^([0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/;
   return email.match(regEx) ? true : false;
 }
 
