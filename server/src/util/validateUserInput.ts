@@ -20,11 +20,25 @@ export function validateRegisterInput({
     });
   }
 
+  if(/\s/g.test(firstName) || firstName.length > 10) {
+    errors.push({
+      field: "firstName",
+      message: "First name cannot contain white spaces and must have a maximum of 10 characters"
+    })
+  }
+
   if (lastName.trim() === "") {
     errors.push({
       field: "lastName",
       message: "Last name must not be empty",
     });
+  }
+
+  if(/\s/g.test(lastName) || lastName.length > 10) {
+    errors.push({
+      field: "lastName",
+      message: "Last name cannot contain white spaces and must have a maximum of 10 characters"
+    })
   }
 
   if (userEmail.trim() === "") {
