@@ -72,7 +72,7 @@ export type MutationLoginUserArgs = {
 
 export type Query = {
   __typename?: 'Query';
-  CarAdds: Array<CarAdd>;
+  carAdds: Array<CarAdd>;
   carAdd?: Maybe<CarAdd>;
   me?: Maybe<User>;
 };
@@ -162,6 +162,17 @@ export type RegisterMutation = (
   ) }
 );
 
+export type CarAddsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CarAddsQuery = (
+  { __typename?: 'Query' }
+  & { carAdds: Array<(
+    { __typename?: 'CarAdd' }
+    & Pick<CarAdd, 'id' | 'createdAt' | 'updatedAt' | 'brand' | 'model' | 'price'>
+  )> }
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -225,6 +236,22 @@ export const RegisterDocument = gql`
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
+};
+export const CarAddsDocument = gql`
+    query CarAdds {
+  carAdds {
+    id
+    createdAt
+    updatedAt
+    brand
+    model
+    price
+  }
+}
+    `;
+
+export function useCarAddsQuery(options: Omit<Urql.UseQueryArgs<CarAddsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<CarAddsQuery>({ query: CarAddsDocument, ...options });
 };
 export const MeDocument = gql`
     query Me {

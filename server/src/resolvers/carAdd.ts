@@ -5,7 +5,7 @@ import { MyContext } from "../types";
 @Resolver()
 export class CarAddResolver {
   @Query(() => [CarAdd])
-  CarAdds(@Ctx() { em }: MyContext): Promise<CarAdd[]> {
+  carAdds(@Ctx() { em }: MyContext): Promise<CarAdd[]> {
     return em.find(CarAdd, {});
   }
 

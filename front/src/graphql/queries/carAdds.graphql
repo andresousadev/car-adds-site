@@ -1,0 +1,10 @@
+query CarAdds {
+  carAdds{
+    id
+    createdAt
+    updatedAt
+    brand
+    model
+    price
+  }
+}
